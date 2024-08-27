@@ -1,8 +1,8 @@
-import { useState } from "react";
-import GameBoard from "./components/GameBoard/GameBoard";
-import Player from "./components/Player/Player";
-import Log from "./components/Log/Log";
-import GameOver from "./components/GameOverScreen/GameOver";
+import { useEffect, useState } from "react";
+import Player from "./components/Player";
+import GameBoard from "./components/GameBoard";
+import Log from "./components/Log";
+import GameOver from "./components/GameOver";
 
 const initialGameBoard = [
   [null, null, null],
@@ -103,6 +103,18 @@ function App() {
     X: "Player 1",
     O: "Player 2",
   });
+  const [isWideScreen, setIsWideScreen] = useState(window.innerWidth >= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsWideScreen(window.innerWidth >= 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const activePlayer = deriveActivePlayer(gameTurns);
   const gameBoard = deriveGameBoard(gameTurns);
@@ -137,31 +149,41 @@ function App() {
 
   return (
     <main>
-      <header>
-        <h1>Tic-Tac-Toe</h1>
-      </header>
-      <div id="game-container">
-        <ol id="players" className="highlight-player">
-          <Player
-            initialName={"Player 1"}
-            symbol={"X"}
-            isActive={activePlayer === "X"}
-            onNameChange={handlePlayerNameChange}
-          />
-          <Player
-            initialName={"Player 2"}
-            symbol={"O"}
-            isActive={activePlayer === "O"}
-            onNameChange={handlePlayerNameChange}
-          />
-        </ol>
-        {(winner || draw) && (
-          <GameOver winner={winner} onRestart={handleRestart} />
-        )}
-        <GameBoard onSquareClick={handlePlayerClick} board={gameBoard} />
-      </div>
-
-      <Log turns={gameTurns} />
+      {isWideScreen ? (
+        <>
+          <header>
+            <h1>Tic-Tac-Toe</h1>
+          </header>
+          <div id="game-container">
+            <ol id="players" className="highlight-player">
+              <Player
+                initialName={"Player 1"}
+                symbol={"X"}
+                isActive={activePlayer === "X"}
+                onNameChange={handlePlayerNameChange}
+              />
+              <Player
+                initialName={"Player 2"}
+                symbol={"O"}
+                isActive={activePlayer === "O"}
+                onNameChange={handlePlayerNameChange}
+              />
+            </ol>
+            {(winner || draw) && (
+              <GameOver winner={winner} onRestart={handleRestart} />
+            )}
+            <GameBoard onSquareClick={handlePlayerClick} board={gameBoard} />
+            <div className="reset-button">
+              <button onClick={handleRestart}>Restart Game</button>
+            </div>
+          </div>
+          <Log turns={gameTurns} />
+        </>
+      ) : (
+        <div className="warning">
+          <h2>WORKS ONLY ON TABLET, LAPTOP OR DESKTOP!</h2>
+        </div>
+      )}
     </main>
   );
 }
